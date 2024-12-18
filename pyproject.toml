@@ -17,6 +17,8 @@ classifiers = [
 dynamic = ["version"]
 requires-python = ">=3.9"
 dependencies = [
+    "resspect", # All external libraries will take a dependency on resspect
+    "numpy", # Just used for type hints in this package
 ]
 
 [project.urls]
