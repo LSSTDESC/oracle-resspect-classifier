@@ -1,9 +1,11 @@
 from .oracle_classifier import ExampleClassifier
-from .oracle_feature_extractor import ExampleFeatureExtractor
+from .oracle_feature_extractor import ORACLEFeatureExtractor
 from .oracle_query_strategy import ExampleQueryStrategy
+from .elasticc2_oracle_feature_extractor import ELAsTiCC2_ORACLEFeatureExtractor
 
 __all__ = [
     "ExampleClassifier",
-    "ExampleFeatureExtractor",
+    "ORACLEFeatureExtractor",
     "ExampleQueryStrategy",
+    "ELAsTiCC2_ORACLEFeatureExtractor"
 ]

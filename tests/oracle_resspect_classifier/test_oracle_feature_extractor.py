@@ -1,10 +1,13 @@
-from oracle_resspect_classifier.oracle_feature_extractor import ExampleFeatureExtractor
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../src/')))
 
+from oracle_resspect_classifier.elasticc2_oracle_feature_extractor import ELAsTiCC2_ORACLEFeatureExtractor
 
 def test_expected_attributes() -> None:
     """Verify the expected attributes of the `ExampleFeatureExtractor` class"""
 
-    fe = ExampleFeatureExtractor
+    fe = ELAsTiCC2_ORACLEFeatureExtractor()
     assert hasattr(fe, "feature_names")
     assert isinstance(fe.feature_names, list)
 
@@ -16,3 +19,5 @@ def test_expected_attributes() -> None:
 
     assert hasattr(fe, "non_anomaly_classes")
     assert isinstance(fe.non_anomaly_classes, list)
+    
+    assert getattr(fe, "num_features") == 24
