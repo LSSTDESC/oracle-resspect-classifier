@@ -1,4 +1,4 @@
-from resspect_external.example_classifier import ExampleClassifier
+from oracle_resspect_classifier.example_classifier import ExampleClassifier
 
 
 def test_example_classifier():

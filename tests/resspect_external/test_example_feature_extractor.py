@@ -1,4 +1,4 @@
-from resspect_external.example_feature_extractor import ExampleFeatureExtractor
+from oracle_resspect_classifier.example_feature_extractor import ExampleFeatureExtractor
 
 
 def test_expected_attributes() -> None:

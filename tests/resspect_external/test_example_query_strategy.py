@@ -1,4 +1,4 @@
-from resspect_external.example_query_strategy import ExampleQueryStrategy
+from oracle_resspect_classifier.example_query_strategy import ExampleQueryStrategy
 
 
 def test_example_query_strategy():
