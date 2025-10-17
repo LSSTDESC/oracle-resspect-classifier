@@ -1,10 +1,10 @@
 
 [project]
-name = "resspect_external"
+name = "oracle-resspect-classifier"
 license = {file = "LICENSE"}
 readme = "README.md"
 authors = [
-    { name = "Drew Oldag", email = "awoldag@uw.edu" }
+    { name = "Arjun Chainani", email = "arjun15@illinois.edu" }
 ]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -22,7 +22,7 @@ dependencies = [
 ]
 
 [project.urls]
-"Source Code" = "https://github.com/lsstdesc/resspect_external"
+"Source Code" = "https://github.com/LSSTDESC/oracle-resspect-classifier"
 
 # On a mac, install optional dependencies with `pip install '.[dev]'` (include the single quotes)
 [project.optional-dependencies]
@@ -42,7 +42,7 @@ requires = [
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools_scm]
-write_to = "src/resspect_external/_version.py"
+write_to = "src/oracle-resspect-classifier/_version.py"
 
 [tool.pytest.ini_options]
 testpaths = [
@@ -104,4 +104,4 @@ ignore = [
 ]
 
 [tool.coverage.run]
-omit=["src/resspect_external/_version.py"]
+omit=["src/oracle-resspect-classifier/_version.py"]
