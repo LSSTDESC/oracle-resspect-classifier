@@ -18,6 +18,8 @@ class ELAsTiCC2_ORACLEFeatureExtractor(ORACLEFeatureExtractor):
     
     lsst_filters = ['u', 'g', 'r', 'i', 'z', 'y']
     
+    TOM_scaling_const = 10 ** ((31.4 - 27.5) / 2.5)
+    
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         
@@ -40,3 +42,8 @@ class ELAsTiCC2_ORACLEFeatureExtractor(ORACLEFeatureExtractor):
         )
         
         return host_features
+    
+    def fit_all(self) -> np.ndarray:
+        lc = self.photometry
+        
+        return np.array([])

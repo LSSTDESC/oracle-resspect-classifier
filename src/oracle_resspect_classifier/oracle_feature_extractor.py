@@ -129,11 +129,11 @@ class ORACLEFeatureExtractor(LightCurve):
             Features extracted from the light curves.
         """
         # Implement feature extraction here
-        self.features = self.example_extraction_function()
+        self.features = self._example_extraction_function()
         return self.features
 
     # TODO: To be implemented
-    def _example_extraction_function():
+    def _example_extraction_function(self):
         # Just for demo purposes
         pass
 
