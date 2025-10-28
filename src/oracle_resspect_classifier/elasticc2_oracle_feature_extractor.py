@@ -78,7 +78,7 @@ class ELAsTiCC2_ORACLEFeatureExtractor(ORACLEFeatureExtractor):
                                              host_feature_names):
             static_features[feature_name] = obj_data[feature_name]
         
-        return pd.merge(lc, static_features, on='diaobject_id')
+        return pd.merge(time_series_features, static_features, on='diaobject_id')
 
     def fit_all(self, obj_data, parquet_path, plot_samples=False):
         # write features to intermediate parquet file that ORACLE can ingest
