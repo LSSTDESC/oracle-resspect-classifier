@@ -86,4 +86,4 @@ class ELAsTiCC2_ORACLEFeatureExtractor(ORACLEFeatureExtractor):
         self.features = features_df
         
         features_df = pl.from_pandas(features_df)
-        features_df.write_parquet(parquet_path)
+        features_df.write_csv(parquet_path)

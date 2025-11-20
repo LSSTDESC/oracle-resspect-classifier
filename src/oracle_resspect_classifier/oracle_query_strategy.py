@@ -1,6 +1,8 @@
 import numpy as np
 from resspect.query_strategies import QueryStrategy
 
+# add a query strategy that will take ORACLE's output hierarchy and convert it to a Ia vs non-Ia
+# and then do uncertainty sampling on that
 
 class ExampleQueryStrategy(QueryStrategy):
     """Minimal example of an external query strategy class."""
