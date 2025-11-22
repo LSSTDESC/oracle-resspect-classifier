@@ -22,6 +22,7 @@ class ORACLEFeatureExtractor(LightCurve):
         'filtername',
         'psflux',
         'psfluxerr',
+        'photflag',
     ]
 
     # The name of the id column of the data. e.g. 'ID', 'obj_id', etc.

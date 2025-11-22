@@ -24,11 +24,34 @@ class ELAsTiCC2_ORACLEFeatureExtractor(ORACLEFeatureExtractor):
     
     # maps time-series flux feature names in TOM/fastDB to the time-series feature names that ORACLE expects
     ts_feature_map = {
-        'MJD': 'midpointtai',
-        'midpointtai': 'midpointtai',
-        'BAND': 'filtername',
-        'FLUXCAL': 'psflux',
-        'FLUXCALERR': 'psfluxerr' 
+        'midpointtai': 'MJD',
+        'filtername': 'BAND',
+        'psflux': 'FLUXCAL',
+        'psfluxerr': 'FLUXCALERR',
+        'photflag': 'PHOTFLAG',
+    }
+    
+    static_feature_map_parquet = {
+        'ra': 'RA',
+        'decl': 'DEC',
+        'mwebv': 'MWEBV',
+        'mwebv_err': 'MWEBV_ERR',
+        'z_final': 'REDSHIFT_FINAL',
+        'z_final_err': 'REDSHIFT_FINAL_ERR',
+        'hostgal_zphot': 'HOSTGAL_PHOTOZ',
+        'hostgal_zphot_err': 'HOSTGAL_PHOTOZ_ERR',
+        'hostgal_zspec': 'HOSTGAL_SPECZ',
+        'hostgal_zspec_err': 'HOSTGAL_SPECZ_ERR',
+        'hostgal_ra': 'HOSTGAL_RA',
+        'hostgal_dec': 'HOSTGAL_DEC',
+        'hostgal_snsep': 'HOSTGAL_SNSEP',
+        'hostgal_ellipticity': 'HOSTGAL_ELLIPTICITY',
+        'hostgal_mag_u': 'HOSTGAL_MAG_u',
+        'hostgal_mag_g': 'HOSTGAL_MAG_g',
+        'hostgal_mag_r': 'HOSTGAL_MAG_r',
+        'hostgal_mag_i': 'HOSTGAL_MAG_i',
+        'hostgal_mag_z': 'HOSTGAL_MAG_z',
+        'hostgal_mag_y': 'HOSTGAL_MAG_Y',
     }
     
     TOM_scaling_const = 10 ** ((31.4 - 27.5) / 2.5)
@@ -42,7 +65,19 @@ class ELAsTiCC2_ORACLEFeatureExtractor(ORACLEFeatureExtractor):
         
     @classmethod
     def get_features(cls, filters: list) -> list[str]:
-        return super().get_features(filters) + cls._get_host_features()
+        return cls._get_static_features() + cls._get_ts_features()
+    
+    @classmethod
+    def _get_static_features(cls) -> list[str]:
+        return list(map(
+            lambda x: ELAsTiCC2_ORACLEFeatureExtractor.static_feature_map_parquet.get(x, ""),
+            cls.static_feature_names + cls._get_host_features()))
+    
+    @classmethod
+    def _get_ts_features(cls) -> list[str]:
+        return list(map(
+            lambda x: ELAsTiCC2_ORACLEFeatureExtractor.ts_feature_map.get(x, ""),
+            cls.ts_feature_names))
     
     @classmethod
     def _get_host_features(cls) -> list[str]:
@@ -50,12 +85,12 @@ class ELAsTiCC2_ORACLEFeatureExtractor(ORACLEFeatureExtractor):
         host_features.extend(ELAsTiCC2_ORACLEFeatureExtractor.host_galaxy_features[:-1])
         
         host_features.extend(
-            cls._get_features_per_filter(list(ELAsTiCC2_ORACLEFeatureExtractor.host_galaxy_features[-1]),
+            cls._get_features_per_filter([ELAsTiCC2_ORACLEFeatureExtractor.host_galaxy_features[-1]],
                                          ELAsTiCC2_ORACLEFeatureExtractor.lsst_filters)
         )
         
         return host_features
-    
+        
     @classmethod
     def _plot_sample_lc(cls, lc: pd.DataFrame):
         x_ts = np.array(lc)
@@ -68,23 +103,30 @@ class ELAsTiCC2_ORACLEFeatureExtractor(ORACLEFeatureExtractor):
         if plot_samples and type(lc) == pd.DataFrame:
             self._plot_sample_lc(lc)
         
-        time_series_features = pd.Series(0, index=time_dependent_feature_list)
+        time_series_features = pd.DataFrame(columns=time_dependent_feature_list)
+        float64_features = set(['FLUXCAL', 'FLUXCALERR', 'MJD'])
         for feature_name in time_dependent_feature_list:
-            time_series_features[feature_name] = lc[ELAsTiCC2_ORACLEFeatureExtractor.ts_feature_map[feature_name]]
-        
-        host_feature_names = self._get_host_features()
-        static_features = pd.Series(0, index=ORACLEFeatureExtractor.static_feature_names + host_feature_names)
-        
-        for feature_name in (ORACLEFeatureExtractor.static_feature_names + 
-                                             host_feature_names):
-            static_features[feature_name] = obj_data[feature_name]
-        
-        return pd.merge(time_series_features, static_features, on='diaobject_id')
+            # ensure we store plain Python lists (not pandas.Series) so Arrow/type
+            # inference used by polars/pyarrow won't try to interpret a Series object
+            if feature_name in float64_features:
+                time_series_features[feature_name] = [lc[feature_name].astype("float64").tolist()]
+            else:
+                time_series_features[feature_name] = [lc[feature_name].tolist()]
+                            
+        static_feature_list = self._get_static_features()
+        # Build a single-row DataFrame for static features so values appear
+        # on the same row as time-series features (avoid empty-frame alignment)
+        static_values = {}
+        for feature_name in static_feature_list:
+            # use .get to avoid KeyError if feature missing
+            static_values[feature_name] = self.additional_info.get(feature_name, None)
+        static_features = pd.DataFrame([static_values], columns=static_feature_list)
+    
+        return pd.concat([time_series_features.reset_index(drop=True), static_features.reset_index(drop=True)], axis=1)
 
-    def fit_all(self, obj_data=None, parquet_path='TOM_days_storage/TOM_training_features.csv', plot_samples=False):
+    def fit_all(self, parquet_path='../TOM_training_features.parquet', plot_samples=False):
         # write features to intermediate parquet file that ORACLE can ingest
-        features_df = self.fit(obj_data, plot_samples=plot_samples)
-        self.features = features_df
+        self.features = self.fit(plot_samples=plot_samples)
+        print(self.features)
+        self.features.to_parquet(parquet_path)
         
-        features_df = pl.from_pandas(features_df)
-        features_df.write_csv(parquet_path)
