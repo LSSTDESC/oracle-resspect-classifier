@@ -25,6 +25,7 @@ class ELAsTiCC2_ORACLEFeatureExtractor(ORACLEFeatureExtractor):
     # maps time-series flux feature names in TOM/fastDB to the time-series feature names that ORACLE expects
     ts_feature_map = {
         'MJD': 'midpointtai',
+        'midpointtai': 'midpointtai',
         'BAND': 'filtername',
         'FLUXCAL': 'psflux',
         'FLUXCALERR': 'psfluxerr' 
@@ -61,7 +62,7 @@ class ELAsTiCC2_ORACLEFeatureExtractor(ORACLEFeatureExtractor):
         plotter = ELAsTiCC_plotter()
         plotter.get_lc_plots(x_ts)
     
-    def fit(self, obj_data, plot_samples=False) -> pd.DataFrame:
+    def fit(self, plot_samples=False) -> pd.DataFrame:
         lc = self.photometry if type(self.photometry) == pd.DataFrame else pd.Series()
         
         if plot_samples and type(lc) == pd.DataFrame:
@@ -80,7 +81,7 @@ class ELAsTiCC2_ORACLEFeatureExtractor(ORACLEFeatureExtractor):
         
         return pd.merge(time_series_features, static_features, on='diaobject_id')
 
-    def fit_all(self, obj_data, parquet_path, plot_samples=False):
+    def fit_all(self, obj_data=None, parquet_path='TOM_days_storage/TOM_training_features.csv', plot_samples=False):
         # write features to intermediate parquet file that ORACLE can ingest
         features_df = self.fit(obj_data, plot_samples=plot_samples)
         self.features = features_df
