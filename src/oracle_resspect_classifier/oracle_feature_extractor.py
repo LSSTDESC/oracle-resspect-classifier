@@ -56,9 +56,8 @@ class ORACLEFeatureExtractor(LightCurve):
         """
         return cls.static_feature_names + cls.ts_feature_names
 
-    # TODO: To be implemented
     @classmethod
-    def get_metadata_columns(cls, **kwargs) -> list[str]:
+    def get_metadata_columns(cls) -> list[str]:
         """
         A class method that returns the metadata columns for the feature extractor.
         Depending on how dynamic the metadata columns are, this method can be
@@ -69,15 +68,7 @@ class ORACLEFeatureExtractor(LightCurve):
         metadata_columns: list[str]
             List of metadata columns for the feature extractor.
         """
-
-        # hard-coded example
-        metadata_columns = [cls.id_column, "redshift", cls.label_column, "sncode", "sample"]
-
-        # dynamic example
-        kwargs["override_primary_columns"] = [cls.id_column, "redshift", cls.label_column, "sncode", "sample"]
-        metadata_columns = super().get_metadata_header(**kwargs)
-
-        return metadata_columns
+        return [cls.id_column, "redshift", cls.label_column, "sncode"]
 
     # TODO: To be implemented
     @classmethod

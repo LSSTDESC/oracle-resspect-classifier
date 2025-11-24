@@ -68,6 +68,10 @@ class ELAsTiCC2_ORACLEFeatureExtractor(ORACLEFeatureExtractor):
         return cls._get_static_features() + cls._get_ts_features()
     
     @classmethod
+    def get_feature_header(cls, filters: list[str], **kwargs) -> list[str]:
+        return super().get_metadata_columns() + ELAsTiCC2_ORACLEFeatureExtractor.get_features(ELAsTiCC2_ORACLEFeatureExtractor.lsst_filters)
+    
+    @classmethod
     def _get_static_features(cls) -> list[str]:
         return list(map(
             lambda x: ELAsTiCC2_ORACLEFeatureExtractor.static_feature_map_parquet.get(x, ""),
@@ -126,7 +130,8 @@ class ELAsTiCC2_ORACLEFeatureExtractor(ORACLEFeatureExtractor):
 
     def fit_all(self, parquet_path='../TOM_training_features.parquet', plot_samples=False):
         # write features to intermediate parquet file that ORACLE can ingest
-        self.features = self.fit(plot_samples=plot_samples)
+        features_df = self.fit(plot_samples=plot_samples)
+        features_df.to_parquet(parquet_path)
+        self.features = features_df.iloc[0].tolist()
         print(self.features)
-        self.features.to_parquet(parquet_path)
-        
+        print(len(self.features))

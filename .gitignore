@@ -151,3 +151,4 @@ _html/
 
 # Data Files
 *.parquet
+*.csv
