@@ -65,7 +65,7 @@ class ELAsTiCC2_ORACLEFeatureExtractor(ORACLEFeatureExtractor):
         
     @classmethod
     def get_features(cls, filters: list) -> list[str]:
-        return cls._get_static_features() + cls._get_ts_features()
+        return cls._get_ts_features() + cls._get_static_features()
     
     @classmethod
     def get_feature_header(cls, filters: list[str], **kwargs) -> list[str]:
@@ -133,5 +133,8 @@ class ELAsTiCC2_ORACLEFeatureExtractor(ORACLEFeatureExtractor):
         features_df = self.fit(plot_samples=plot_samples)
         features_df.to_parquet(parquet_path)
         self.features = features_df.iloc[0].tolist()
-        print(self.features)
-        print(len(self.features))
+    
+    def get_features_to_write(self):
+        features_list = [self.id, self.redshift, self.sntype, self.sncode]
+        features_list.extend(self.features)
+        return features_list

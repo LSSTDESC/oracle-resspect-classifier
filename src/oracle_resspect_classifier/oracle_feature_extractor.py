@@ -54,7 +54,7 @@ class ORACLEFeatureExtractor(LightCurve):
         feature_names: list[str]
             List of feature names that will be extracted from the light curve.
         """
-        return cls.static_feature_names + cls.ts_feature_names
+        return cls.ts_feature_names + cls.static_feature_names
 
     @classmethod
     def get_metadata_columns(cls) -> list[str]:
