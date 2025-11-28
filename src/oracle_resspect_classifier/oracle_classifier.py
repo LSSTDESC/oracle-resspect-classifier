@@ -1,8 +1,10 @@
 from resspect.classifiers import ResspectClassifier
 from oracle.pretrained.ELAsTiCC import ORACLE1_ELAsTiCC, ORACLE_Taxonomy
-from oracle.train import run_training_loop
 from astropy.table import Table
+from numpy.typing import ArrayLike
+import oracle.train
 import numpy as np
+import pandas as pd
 
 class OracleResspectClassifier(ResspectClassifier):
     """Example of an externally defined classifier for RESSPECT. The API for the
@@ -25,20 +27,16 @@ class OracleClassifier:
     """
 
     def __init__(self,
-                 num_epochs: int,
-                 batch_size: int,
-                 lr: float,
-                 max_n_per_class: int,
-                 alpha: float,
-                 gamma: float,
                  dir: str,
-                 load_weights: str | None):
+                 weights_dir: str,
+                 num_epochs: int = oracle.train.default_num_epochs,
+                 batch_size: int = oracle.train.default_batch_size,
+                 lr: float = oracle.train.default_learning_rate,
+                 max_n_per_class: int | None = oracle.train.default_max_n_per_class,
+                 alpha: float = oracle.train.default_alpha,
+                 gamma: float = oracle.train.default_gamma):
         """It is better to define __init__ with the explicitly required input
         parameters instead of `**kwargs`."""
-        # model objects
-        self.model = ORACLE1_ELAsTiCC()
-        self.taxonomy = ORACLE_Taxonomy()
-        
         # hyperparameters
         self.num_epochs = num_epochs
         self.batch_size = batch_size,
@@ -48,7 +46,11 @@ class OracleClassifier:
         self.gamma = gamma
         self.dir = dir
         self.model_type = "ELAsTiCC"
-        self.load_weights = load_weights
+        self.weights_dir = weights_dir
+        
+        # model objects
+        self.model = ORACLE1_ELAsTiCC(model_dir=self.weights_dir)
+        self.taxonomy = ORACLE_Taxonomy()
 
     def fit(self, train_features: list, train_labels: list) -> None:
         """Fit the classifier to the training data. Not that there is no return
@@ -72,12 +74,12 @@ class OracleClassifier:
             "model": self.model_type,
             "load_weights": self.load_weights
         }
-        run_training_loop(args=hyperparams)
+        oracle.train.run_training_loop(args=hyperparams)
         
         # TODO: fetch updated model from wandb
 
     # NOTE: this function was originally written with type signature (self, list) -> list; had to be adapted for ORACLE but may require changes elsewhere
-    def predict(self, test_features: list) -> dict:
+    def predict(self, test_features: ArrayLike) -> dict:
         """Predict the class labels for the test data.
 
         Parameters
@@ -90,7 +92,16 @@ class OracleClassifier:
         predictions : array-like
             The predicted class labels, [n_samples].
         """
-        test_dataframe = Table(test_features)
+        if type(test_features) == pd.DataFrame:
+            test_dataframe = Table.from_pandas(test_features)
+            
+            # TODO: explode the table, add the static features as metadata and just keep time series features in the actual table
+            # so that the format works with what the oracle API expects
+        else:
+            test_dataframe = Table(test_features)
+            
+        test_dataframe.pprint(max_width=-1)
+        
         return self.model.predict(test_dataframe)
 
     def predict_proba(self, test_features: list) -> dict:

@@ -97,9 +97,50 @@ class ELAsTiCC2_ORACLEFeatureExtractor(ORACLEFeatureExtractor):
         
     @classmethod
     def _plot_sample_lc(cls, lc: pd.DataFrame):
-        x_ts = np.array(lc)
+        '''
+        This is a helper function for visualizing light curves. It takes the astropy table of time series features,
+        and returns the RGB image tensor for the plot, which can then be visualized with `plt.show()`
+        '''
+        # Only treat time-dependent columns as iterables, others as scalars
+        if isinstance(lc, pd.DataFrame):
+            try:
+                if lc.shape[0] == 1:
+                    # For time-dependent columns, convert the single row's cell to array
+                    arrays = [np.asarray(lc[col].iloc[0]) if col in time_dependent_feature_list else np.array([lc[col].iloc[0]]) for col in lc.columns]
+                    # Only stack time-dependent columns
+                    x_ts = np.column_stack([np.asarray(lc[col].iloc[0]) for col in time_dependent_feature_list])
+                else:
+                    x_ts = np.asarray(lc[time_dependent_feature_list])
+            except Exception:
+                x_ts = np.array(lc[time_dependent_feature_list])
+        else:
+            x_ts = np.array(lc)
+
         plotter = ELAsTiCC_plotter()
-        plotter.get_lc_plots(x_ts)
+        img = plotter.get_lc_plots(x_ts)
+
+        # Display inline in notebooks: convert returned image tensor/array and show with matplotlib
+        try:
+            import matplotlib.pyplot as plt
+            try:
+                import torch
+            except Exception:
+                torch = None
+
+            if torch is not None and isinstance(img, torch.Tensor):
+                img_np = img.permute(1, 2, 0).numpy().astype(int)
+            else:
+                img_np = np.asarray(img)
+
+            plt.figure(figsize=(4, 4))
+            plt.imshow(img_np)
+            plt.axis('off')
+            plt.show()
+        except Exception:
+            # If matplotlib isn't available or display fails, silently continue.
+            pass
+
+        return img
     
     def fit(self, plot_samples=False) -> pd.DataFrame:
         lc = self.photometry if type(self.photometry) == pd.DataFrame else pd.Series()
@@ -116,7 +157,7 @@ class ELAsTiCC2_ORACLEFeatureExtractor(ORACLEFeatureExtractor):
                 time_series_features[feature_name] = [lc[feature_name].astype("float64").tolist()]
             else:
                 time_series_features[feature_name] = [lc[feature_name].tolist()]
-                            
+        
         static_feature_list = self._get_static_features()
         # Build a single-row DataFrame for static features so values appear
         # on the same row as time-series features (avoid empty-frame alignment)
@@ -125,15 +166,13 @@ class ELAsTiCC2_ORACLEFeatureExtractor(ORACLEFeatureExtractor):
             # use .get to avoid KeyError if feature missing
             static_values[feature_name] = self.additional_info.get(feature_name, None)
         static_features = pd.DataFrame([static_values], columns=static_feature_list)
-    
         return pd.concat([time_series_features.reset_index(drop=True), static_features.reset_index(drop=True)], axis=1)
 
     def fit_all(self, parquet_path='../TOM_training_features.parquet', plot_samples=False):
         # write features to intermediate parquet file that ORACLE can ingest
         features_df = self.fit(plot_samples=plot_samples)
-        features_df.to_parquet(parquet_path)
         self.features = features_df.iloc[0].tolist()
-    
+
     def get_features_to_write(self):
         features_list = [self.id, self.redshift, self.sntype, self.sncode]
         features_list.extend(self.features)

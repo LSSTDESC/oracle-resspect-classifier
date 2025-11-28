@@ -19,9 +19,9 @@ class ORACLEFeatureExtractor(LightCurve):
     
     ts_feature_names = [
         'midpointtai',
-        'filtername',
         'psflux',
         'psfluxerr',
+        'filtername',
         'photflag',
     ]
 
