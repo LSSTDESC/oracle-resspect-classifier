@@ -26,7 +26,7 @@ class ORACLEFeatureExtractor(LightCurve):
     ]
 
     # The name of the id column of the data. e.g. 'ID', 'obj_id', etc.
-    id_column = "diaobject_id"
+    id_column = "SNID"
 
     # The name of the label column. e.g. 'type', 'label', 'sntype', etc.
     # This is the column where the class label is stored.
