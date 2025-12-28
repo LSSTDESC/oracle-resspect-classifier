@@ -36,6 +36,8 @@ class ELAsTiCC2_ORACLEFeatureExtractor(ORACLEFeatureExtractor):
         'decl': 'DEC',
         'mwebv': 'MWEBV',
         'mwebv_err': 'MWEBV_ERR',
+        'vpec': 'VPEC',
+        'vpec_err': 'VPEC_ERR',
         'z_final': 'REDSHIFT_HELIO',
         'z_final_err': 'REDSHIFT_HELIO_ERR',
         'hostgal_zphot': 'HOSTGAL_PHOTOZ',

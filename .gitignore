@@ -152,3 +152,4 @@ _html/
 # Data Files
 *.parquet
 *.csv
+*.ecsv

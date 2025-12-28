@@ -13,6 +13,8 @@ class ORACLEFeatureExtractor(LightCurve):
         'decl',
         'mwebv',
         'mwebv_err',
+        'vpec',
+        'vpec_err',
         'z_final',
         'z_final_err',
     ]
