@@ -52,6 +52,12 @@ class OracleClassifier:
         self.model = ORACLE1_ELAsTiCC(model_dir=self.weights_dir)
         self.taxonomy = ORACLE_Taxonomy()
 
+    def load_classifier(self, pretrained_weights_path: str):
+        # in the current oracle API, there is no way to instantiate the model without pretrained weights,
+        # so the self.model object is already loaded and there isn't anything to do
+        # for now this method just exists so that RESSPECT doesn't error out
+        pass
+
     def fit(self, train_features: list, train_labels: list) -> None:
         """Fit the classifier to the training data. Not that there is no return
         value, it is only expected to fit the classifier to the data.
